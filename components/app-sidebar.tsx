@@ -7,6 +7,7 @@ import {
   CalendarDays,
   ChartNoAxesColumn,
   ChevronsUpDown,
+  FolderKanban,
   Inbox,
   Layers,
   LayoutDashboard,
@@ -14,6 +15,8 @@ import {
   Plus,
   Search,
   Settings,
+  SlidersHorizontal,
+  Users,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -46,9 +49,15 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { title: 'İdarə paneli', href: '/', icon: LayoutDashboard },
   { title: 'Tapşırıqlar', href: '/tasks', icon: ListTodo, badge: '14' },
+  { title: 'Layihələr', href: '/projects', icon: FolderKanban },
   { title: 'Gələnlər', href: '/inbox', icon: Inbox, badge: '3' },
   { title: 'Təqvim', href: '/calendar', icon: CalendarDays },
   { title: 'Hesabatlar', href: '/reports', icon: ChartNoAxesColumn },
+]
+
+const workspaceItems = [
+  { title: 'Xüsusi sahələr', href: '/fields', icon: SlidersHorizontal },
+  { title: 'Komanda və rollar', href: '/members', icon: Users },
 ]
 
 export function AppSidebar() {
@@ -136,13 +145,31 @@ export function AppSidebar() {
               <SidebarMenuItem key={project.id}>
                 <SidebarMenuButton
                   render={
-                    <Link href="/tasks">
+                    <Link href="/projects">
                       <span className={cn('size-2 rounded-sm', project.color)} aria-hidden="true" />
                       <span>{project.name}</span>
                     </Link>
                   }
                 />
                 <SidebarMenuBadge>{project.taskCount}</SidebarMenuBadge>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>İş sahəsi</SidebarGroupLabel>
+          <SidebarMenu>
+            {workspaceItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  isActive={pathname === item.href}
+                  render={
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  }
+                />
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
