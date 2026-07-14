@@ -1,11 +1,19 @@
 export type TaskStatus = 'backlog' | 'todo' | 'in-progress' | 'review' | 'done'
 export type TaskPriority = 'urgent' | 'high' | 'medium' | 'low'
 
+export type RoleId = 'owner' | 'admin' | 'manager' | 'member' | 'guest'
+export type MemberStatus = 'active' | 'invited' | 'suspended'
+export type ProjectStatus = 'planning' | 'active' | 'on-hold' | 'completed'
+
 export interface User {
   id: string
   name: string
   initials: string
   role: string
+  email: string
+  roleId: RoleId
+  status: MemberStatus
+  lastActive: string
 }
 
 export interface Project {
@@ -14,6 +22,13 @@ export interface Project {
   key: string
   color: string
   taskCount: number
+  description: string
+  status: ProjectStatus
+  progress: number
+  leadId: string
+  memberIds: string[]
+  startDate: string
+  dueDate: string
 }
 
 export interface Task {
@@ -40,18 +55,115 @@ export interface ActivityItem {
 }
 
 export const users: User[] = [
-  { id: 'u1', name: 'Aysel Məmmədova', initials: 'AM', role: 'Product Manager' },
-  { id: 'u2', name: 'Rəşad Əliyev', initials: 'RƏ', role: 'Frontend Developer' },
-  { id: 'u3', name: 'Nigar Həsənova', initials: 'NH', role: 'UI/UX Designer' },
-  { id: 'u4', name: 'Elvin Quliyev', initials: 'EQ', role: 'Backend Developer' },
-  { id: 'u5', name: 'Leyla Kərimova', initials: 'LK', role: 'QA Engineer' },
+  {
+    id: 'u1',
+    name: 'Aysel Məmmədova',
+    initials: 'AM',
+    role: 'Product Manager',
+    email: 'aysel@acme.az',
+    roleId: 'owner',
+    status: 'active',
+    lastActive: 'indicə',
+  },
+  {
+    id: 'u2',
+    name: 'Rəşad Əliyev',
+    initials: 'RƏ',
+    role: 'Frontend Developer',
+    email: 'reshad@acme.az',
+    roleId: 'member',
+    status: 'active',
+    lastActive: '12 dəq əvvəl',
+  },
+  {
+    id: 'u3',
+    name: 'Nigar Həsənova',
+    initials: 'NH',
+    role: 'UI/UX Designer',
+    email: 'nigar@acme.az',
+    roleId: 'manager',
+    status: 'active',
+    lastActive: '1 saat əvvəl',
+  },
+  {
+    id: 'u4',
+    name: 'Elvin Quliyev',
+    initials: 'EQ',
+    role: 'Backend Developer',
+    email: 'elvin@acme.az',
+    roleId: 'admin',
+    status: 'active',
+    lastActive: '3 saat əvvəl',
+  },
+  {
+    id: 'u5',
+    name: 'Leyla Kərimova',
+    initials: 'LK',
+    role: 'QA Engineer',
+    email: 'leyla@acme.az',
+    roleId: 'member',
+    status: 'invited',
+    lastActive: '2 gün əvvəl',
+  },
 ]
 
 export const projects: Project[] = [
-  { id: 'p1', name: 'Mobil Tətbiq', key: 'MOB', color: 'bg-chart-1', taskCount: 24 },
-  { id: 'p2', name: 'Veb Platforma', key: 'VEB', color: 'bg-chart-2', taskCount: 38 },
-  { id: 'p3', name: 'Marketinq Saytı', key: 'MRK', color: 'bg-chart-3', taskCount: 12 },
-  { id: 'p4', name: 'Daxili Alətlər', key: 'DAX', color: 'bg-chart-4', taskCount: 9 },
+  {
+    id: 'p1',
+    name: 'Mobil Tətbiq',
+    key: 'MOB',
+    color: 'bg-chart-1',
+    taskCount: 24,
+    description: 'iOS və Android üçün əsas mobil tətbiqin işlənməsi və buraxılışı.',
+    status: 'active',
+    progress: 62,
+    leadId: 'u2',
+    memberIds: ['u2', 'u3', 'u4'],
+    startDate: '2026-06-01',
+    dueDate: '2026-08-15',
+  },
+  {
+    id: 'p2',
+    name: 'Veb Platforma',
+    key: 'VEB',
+    color: 'bg-chart-2',
+    taskCount: 38,
+    description: 'SaaS veb platformasının yeni nəsil interfeysi və backend inteqrasiyaları.',
+    status: 'active',
+    progress: 48,
+    leadId: 'u1',
+    memberIds: ['u1', 'u2', 'u3', 'u4', 'u5'],
+    startDate: '2026-05-10',
+    dueDate: '2026-09-30',
+  },
+  {
+    id: 'p3',
+    name: 'Marketinq Saytı',
+    key: 'MRK',
+    color: 'bg-chart-3',
+    taskCount: 12,
+    description: 'Məhsul buraxılışı üçün marketinq və qiymətləndirmə səhifələri.',
+    status: 'planning',
+    progress: 20,
+    leadId: 'u1',
+    memberIds: ['u1', 'u3'],
+    startDate: '2026-07-01',
+    dueDate: '2026-08-01',
+  },
+  {
+    id: 'p4',
+    name: 'Daxili Alətlər',
+    key: 'DAX',
+    color: 'bg-chart-4',
+    taskCount: 9,
+    description: 'Komanda üçün daxili admin panelləri və DevOps avtomatlaşdırması.',
+    status: 'on-hold',
+    progress: 30,
+    leadId: 'u4',
+    memberIds: ['u4', 'u5'],
+    startDate: '2026-04-15',
+    dueDate: '2026-10-01',
+  },
 ]
 
 export const tasks: Task[] = [
@@ -300,4 +412,150 @@ export function getProject(id: string): Project {
 export function formatDate(iso: string): string {
   const d = new Date(iso)
   return d.toLocaleDateString('az-AZ', { day: 'numeric', month: 'short' })
+}
+
+/* ----------------------------- RBAC ----------------------------- */
+
+export interface Role {
+  id: RoleId
+  name: string
+  description: string
+  color: string
+}
+
+export const roles: Role[] = [
+  { id: 'owner', name: 'Sahib', description: 'İş sahəsi üzərində tam nəzarət.', color: 'bg-chart-1' },
+  { id: 'admin', name: 'Admin', description: 'İdarəetmə və konfiqurasiya hüquqları.', color: 'bg-chart-2' },
+  { id: 'manager', name: 'Menecer', description: 'Layihə və komanda idarəetməsi.', color: 'bg-chart-3' },
+  { id: 'member', name: 'Üzv', description: 'Tapşırıqlar üzərində standart iş.', color: 'bg-chart-4' },
+  { id: 'guest', name: 'Qonaq', description: 'Yalnız oxumaq üçün məhdud giriş.', color: 'bg-chart-5' },
+]
+
+export interface Permission {
+  key: string
+  label: string
+  category: string
+}
+
+export const permissions: Permission[] = [
+  { key: 'task.create', label: 'Tapşırıq yaratmaq', category: 'Tapşırıqlar' },
+  { key: 'task.update', label: 'Tapşırıq redaktə etmək', category: 'Tapşırıqlar' },
+  { key: 'task.delete', label: 'Tapşırıq silmək', category: 'Tapşırıqlar' },
+  { key: 'task.assign', label: 'Tapşırıq təyin etmək', category: 'Tapşırıqlar' },
+  { key: 'project.create', label: 'Layihə yaratmaq', category: 'Layihələr' },
+  { key: 'project.manage', label: 'Layihə idarə etmək', category: 'Layihələr' },
+  { key: 'field.manage', label: 'Xüsusi sahələri idarə etmək', category: 'Konfiqurasiya' },
+  { key: 'workspace.manage', label: 'İş sahəsini idarə etmək', category: 'Konfiqurasiya' },
+  { key: 'member.invite', label: 'Üzv dəvət etmək', category: 'Komanda' },
+  { key: 'member.manage', label: 'Üzvləri idarə etmək', category: 'Komanda' },
+]
+
+export const rolePermissions: Record<RoleId, string[]> = {
+  owner: permissions.map((p) => p.key),
+  admin: [
+    'task.create',
+    'task.update',
+    'task.delete',
+    'task.assign',
+    'project.create',
+    'project.manage',
+    'field.manage',
+    'member.invite',
+    'member.manage',
+  ],
+  manager: ['task.create', 'task.update', 'task.assign', 'project.create', 'project.manage', 'member.invite'],
+  member: ['task.create', 'task.update', 'task.assign'],
+  guest: [],
+}
+
+export function getRole(id: RoleId): Role {
+  return roles.find((r) => r.id === id) ?? roles[roles.length - 1]
+}
+
+export const roleConfig: Record<RoleId, { label: string; className: string }> = {
+  owner: { label: 'Sahib', className: 'border-chart-1/40 text-chart-1' },
+  admin: { label: 'Admin', className: 'border-chart-2/40 text-chart-2' },
+  manager: { label: 'Menecer', className: 'border-chart-3/40 text-chart-3' },
+  member: { label: 'Üzv', className: 'text-muted-foreground' },
+  guest: { label: 'Qonaq', className: 'text-muted-foreground' },
+}
+
+export const memberStatusConfig: Record<MemberStatus, { label: string; dot: string }> = {
+  active: { label: 'Aktiv', dot: 'bg-chart-2' },
+  invited: { label: 'Dəvət olunub', dot: 'bg-chart-3' },
+  suspended: { label: 'Dayandırılıb', dot: 'bg-destructive' },
+}
+
+export const projectStatusConfig: Record<ProjectStatus, { label: string; className: string }> = {
+  planning: { label: 'Planlaşdırma', className: 'border-chart-3/40 text-chart-3' },
+  active: { label: 'Aktiv', className: 'border-chart-2/40 text-chart-2' },
+  'on-hold': { label: 'Gözləmədə', className: 'border-chart-5/40 text-chart-5' },
+  completed: { label: 'Tamamlanıb', className: 'text-muted-foreground' },
+}
+
+/* -------------------------- Custom fields -------------------------- */
+
+export type CustomFieldType =
+  | 'text'
+  | 'longtext'
+  | 'number'
+  | 'currency'
+  | 'date'
+  | 'checkbox'
+  | 'status'
+  | 'priority'
+  | 'select'
+  | 'multiselect'
+  | 'user'
+  | 'url'
+  | 'rating'
+  | 'progress'
+  | 'formula'
+  | 'relation'
+
+export interface CustomFieldTypeMeta {
+  type: CustomFieldType
+  label: string
+  hasOptions: boolean
+}
+
+export const customFieldTypes: CustomFieldTypeMeta[] = [
+  { type: 'text', label: 'Mətn', hasOptions: false },
+  { type: 'longtext', label: 'Uzun mətn', hasOptions: false },
+  { type: 'number', label: 'Rəqəm', hasOptions: false },
+  { type: 'currency', label: 'Valyuta', hasOptions: false },
+  { type: 'date', label: 'Tarix', hasOptions: false },
+  { type: 'checkbox', label: 'Checkbox', hasOptions: false },
+  { type: 'status', label: 'Status', hasOptions: true },
+  { type: 'priority', label: 'Prioritet', hasOptions: true },
+  { type: 'select', label: 'Tək seçim', hasOptions: true },
+  { type: 'multiselect', label: 'Çox seçim', hasOptions: true },
+  { type: 'user', label: 'İstifadəçi', hasOptions: false },
+  { type: 'url', label: 'URL', hasOptions: false },
+  { type: 'rating', label: 'Reytinq', hasOptions: false },
+  { type: 'progress', label: 'İrəliləyiş', hasOptions: false },
+  { type: 'formula', label: 'Formula', hasOptions: false },
+  { type: 'relation', label: 'Əlaqə', hasOptions: false },
+]
+
+export interface CustomFieldDef {
+  id: string
+  name: string
+  type: CustomFieldType
+  projectId: string | 'all'
+  required: boolean
+  options: string[]
+}
+
+export const customFields: CustomFieldDef[] = [
+  { id: 'f1', name: 'Story Points', type: 'number', projectId: 'all', required: false, options: [] },
+  { id: 'f2', name: 'Sprint', type: 'select', projectId: 'p2', required: true, options: ['Sprint 12', 'Sprint 13', 'Sprint 14'] },
+  { id: 'f3', name: 'Büdcə', type: 'currency', projectId: 'p3', required: false, options: [] },
+  { id: 'f4', name: 'Reytinq', type: 'rating', projectId: 'all', required: false, options: [] },
+  { id: 'f5', name: 'Komponentlər', type: 'multiselect', projectId: 'p1', required: false, options: ['UI', 'API', 'Auth', 'DB'] },
+  { id: 'f6', name: 'Reviewer', type: 'user', projectId: 'all', required: false, options: [] },
+]
+
+export function getFieldTypeLabel(type: CustomFieldType): string {
+  return customFieldTypes.find((t) => t.type === type)?.label ?? type
 }

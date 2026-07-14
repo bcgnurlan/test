@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Kanban, List, Search, Table2 } from 'lucide-react'
+import { GanttChartSquare, Kanban, List, Search, Table2 } from 'lucide-react'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import {
   Select,
@@ -21,19 +21,19 @@ import {
   projects,
   statusConfig,
   statusOrder,
-  tasks as initialTasks,
-  type Task,
-  type TaskStatus,
 } from '@/lib/data'
+import { useTaskStore } from '@/lib/store'
 import { TaskTable } from '@/components/tasks/task-table'
 import { KanbanBoard } from '@/components/tasks/kanban-board'
 import { TaskList } from '@/components/tasks/task-list'
+import { TimelineView } from '@/components/tasks/timeline-view'
 
-type ViewMode = 'table' | 'board' | 'list'
+type ViewMode = 'table' | 'board' | 'list' | 'timeline'
 
 export function TasksView() {
   const [view, setView] = React.useState<ViewMode>('table')
-  const [tasks, setTasks] = React.useState<Task[]>(initialTasks)
+  const tasks = useTaskStore((s) => s.tasks)
+  const moveTask = useTaskStore((s) => s.moveTask)
   const [query, setQuery] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState('all')
   const [priorityFilter, setPriorityFilter] = React.useState('all')
@@ -48,10 +48,6 @@ export function TasksView() {
       return true
     })
   }, [tasks, query, statusFilter, priorityFilter, projectFilter])
-
-  const moveTask = React.useCallback((taskId: string, status: TaskStatus) => {
-    setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status } : t)))
-  }, [])
 
   return (
     <div className="flex flex-col gap-4 p-4 md:p-6">
@@ -129,6 +125,9 @@ export function TasksView() {
             <ToggleGroupItem value="list" aria-label="Siyahı görünüşü">
               <List />
             </ToggleGroupItem>
+            <ToggleGroupItem value="timeline" aria-label="Timeline (Gantt) görünüşü">
+              <GanttChartSquare />
+            </ToggleGroupItem>
           </ToggleGroup>
         </div>
       </div>
@@ -136,6 +135,7 @@ export function TasksView() {
       {view === 'table' && <TaskTable tasks={filtered} />}
       {view === 'board' && <KanbanBoard tasks={filtered} onMoveTask={moveTask} />}
       {view === 'list' && <TaskList tasks={filtered} />}
+      {view === 'timeline' && <TimelineView tasks={filtered} />}
     </div>
   )
 }
