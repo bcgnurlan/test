@@ -2,7 +2,6 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
-import { AppShell } from '@/components/app-shell'
 import './globals.css'
 
 const _geistSans = Geist({ subsets: ['latin'] })
@@ -32,7 +31,7 @@ export default function RootLayout({
     <html lang="az" className="bg-background" suppressHydrationWarning>
       <body className="antialiased font-sans">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <AppShell>{children}</AppShell>
+          {children}
         </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
