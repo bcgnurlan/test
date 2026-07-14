@@ -109,11 +109,11 @@ export function TasksView() {
         </Select>
         <div className="ml-auto">
           <ToggleGroup
-            type="single"
             variant="outline"
-            value={view}
+            value={[view]}
             onValueChange={(v) => {
-              if (v) setView(v as ViewMode)
+              const next = v[0] as ViewMode | undefined
+              if (next) setView(next)
             }}
           >
             <ToggleGroupItem value="table" aria-label="Cədvəl görünüşü">

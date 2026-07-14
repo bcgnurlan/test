@@ -26,9 +26,9 @@ import {
   formatDate,
   getUser,
   projectStatusConfig,
-  projects,
   type ProjectStatus,
 } from '@/lib/data'
+import { useProjectStore } from '@/lib/project-store'
 import { cn } from '@/lib/utils'
 
 const statusFilters: Array<{ value: ProjectStatus | 'all'; label: string }> = [
@@ -40,6 +40,7 @@ const statusFilters: Array<{ value: ProjectStatus | 'all'; label: string }> = [
 ]
 
 export function ProjectsView() {
+  const projects = useProjectStore((s) => s.projects)
   const [query, setQuery] = React.useState('')
   const [status, setStatus] = React.useState<ProjectStatus | 'all'>('all')
 

@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { AssigneeAvatar } from '@/components/task-meta'
-import { getProject, statusConfig, type Task } from '@/lib/data'
+import { azMonthsShort, getProject, statusConfig, type Task } from '@/lib/data'
 import { useTaskStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
@@ -109,9 +109,9 @@ export function TimelineView({ tasks }: { tasks: Task[] }) {
                       i === todayIndex && 'bg-primary/10 font-semibold text-primary'
                     )}
                   >
-                    <span>{d.toLocaleDateString('az-AZ', { day: 'numeric' })}</span>
+                    <span>{d.getDate()}</span>
                     <span className="text-muted-foreground">
-                      {d.toLocaleDateString('az-AZ', { month: 'short' })}
+                      {azMonthsShort[d.getMonth()]}
                     </span>
                   </div>
                 )

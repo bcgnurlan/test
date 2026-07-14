@@ -2,11 +2,17 @@
 
 import * as React from 'react'
 import { usePathname } from 'next/navigation'
-import { Moon, Plus, Sun } from 'lucide-react'
+import { ChevronDown, FolderKanban, ListTodo, Moon, Plus, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useShell } from '@/components/app-shell'
 
 const pageTitles: Record<string, string> = {
@@ -22,7 +28,7 @@ const pageTitles: Record<string, string> = {
 
 export function TopBar() {
   const pathname = usePathname()
-  const { openCreate } = useShell()
+  const { openCreate, openCreateProject } = useShell()
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
@@ -44,10 +50,27 @@ export function TopBar() {
         >
           {mounted && resolvedTheme === 'dark' ? <Sun /> : <Moon />}
         </Button>
-        <Button size="sm" onClick={openCreate}>
-          <Plus data-icon="inline-start" />
-          Yeni tapşırıq
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button size="sm">
+                <Plus data-icon="inline-start" />
+                Yeni
+                <ChevronDown data-icon="inline-end" />
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem onClick={openCreate}>
+              <ListTodo />
+              Tapşırıq
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={openCreateProject}>
+              <FolderKanban />
+              Layihə
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   )

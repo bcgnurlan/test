@@ -409,9 +409,24 @@ export function getProject(id: string): Project {
   return projects.find((p) => p.id === id) ?? projects[0]
 }
 
+export const azMonthsShort = [
+  'yan',
+  'fev',
+  'mar',
+  'apr',
+  'may',
+  'iyn',
+  'iyl',
+  'avq',
+  'sen',
+  'okt',
+  'noy',
+  'dek',
+]
+
 export function formatDate(iso: string): string {
   const d = new Date(iso)
-  return d.toLocaleDateString('az-AZ', { day: 'numeric', month: 'short' })
+  return `${d.getUTCDate()} ${azMonthsShort[d.getUTCMonth()]}`
 }
 
 /* ----------------------------- RBAC ----------------------------- */
