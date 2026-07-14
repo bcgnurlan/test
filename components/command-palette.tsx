@@ -10,7 +10,9 @@ import {
   LayoutDashboard,
   ListTodo,
   Plus,
+  SlidersHorizontal,
   User,
+  Users,
 } from 'lucide-react'
 import {
   CommandDialog,
@@ -61,6 +63,10 @@ export function CommandPalette({ open, onOpenChange, onCreateTask }: CommandPale
             <ListTodo />
             Tapşırıqlar
           </CommandItem>
+          <CommandItem onSelect={() => go('/projects')}>
+            <FolderKanban />
+            Layihələr
+          </CommandItem>
           <CommandItem onSelect={() => go('/inbox')}>
             <Inbox />
             Gələnlər
@@ -73,10 +79,18 @@ export function CommandPalette({ open, onOpenChange, onCreateTask }: CommandPale
             <ChartNoAxesColumn />
             Hesabatlar
           </CommandItem>
+          <CommandItem onSelect={() => go('/fields')}>
+            <SlidersHorizontal />
+            Xüsusi sahələr
+          </CommandItem>
+          <CommandItem onSelect={() => go('/members')}>
+            <Users />
+            Komanda və rollar
+          </CommandItem>
         </CommandGroup>
         <CommandGroup heading="Layihələr">
           {projects.map((project) => (
-            <CommandItem key={project.id} onSelect={() => go('/tasks')}>
+            <CommandItem key={project.id} onSelect={() => go('/projects')}>
               <FolderKanban />
               {project.name}
             </CommandItem>
@@ -93,7 +107,7 @@ export function CommandPalette({ open, onOpenChange, onCreateTask }: CommandPale
         </CommandGroup>
         <CommandGroup heading="İnsanlar">
           {users.map((user) => (
-            <CommandItem key={user.id} onSelect={() => onOpenChange(false)}>
+            <CommandItem key={user.id} onSelect={() => go('/members')}>
               <User />
               {user.name}
               <span className="ml-auto text-xs text-muted-foreground">{user.role}</span>

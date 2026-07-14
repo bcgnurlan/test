@@ -132,7 +132,9 @@ function MembersTab() {
                         onValueChange={(v) => updateMemberRole(m.id, v as RoleId)}
                       >
                         <SelectTrigger size="sm" className="w-full">
-                          <SelectValue />
+                          <SelectValue>
+                            {(value: RoleId) => roles.find((r) => r.id === value)?.name}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
@@ -233,7 +235,9 @@ function InviteDialog({
               <FieldLabel>Rol</FieldLabel>
               <Select value={roleId} onValueChange={(v) => setRoleId(v as RoleId)}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>
+                    {(value: RoleId) => roles.find((r) => r.id === value)?.name}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
