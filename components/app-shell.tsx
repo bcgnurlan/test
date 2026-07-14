@@ -7,12 +7,14 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { TopBar } from '@/components/top-bar'
 import { CommandPalette } from '@/components/command-palette'
 import { CreateTaskDialog } from '@/components/create-task-dialog'
+import { CreateProjectDialog } from '@/components/create-project-dialog'
 import { ShortcutsHelp } from '@/components/shortcuts-help'
 import { TaskDetailSheet } from '@/components/task-detail-sheet'
 
 interface ShellContextValue {
   openCommand: () => void
   openCreate: () => void
+  openCreateProject: () => void
   openHelp: () => void
 }
 
@@ -36,6 +38,7 @@ function isTypingTarget(target: EventTarget | null) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [commandOpen, setCommandOpen] = React.useState(false)
   const [createOpen, setCreateOpen] = React.useState(false)
+  const [createProjectOpen, setCreateProjectOpen] = React.useState(false)
   const [helpOpen, setHelpOpen] = React.useState(false)
 
   React.useEffect(() => {
@@ -65,6 +68,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     () => ({
       openCommand: () => setCommandOpen(true),
       openCreate: () => setCreateOpen(true),
+      openCreateProject: () => setCreateProjectOpen(true),
       openHelp: () => setHelpOpen(true),
     }),
     []
@@ -86,8 +90,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               setCommandOpen(false)
               setCreateOpen(true)
             }}
+            onCreateProject={() => {
+              setCommandOpen(false)
+              setCreateProjectOpen(true)
+            }}
           />
           <CreateTaskDialog open={createOpen} onOpenChange={setCreateOpen} />
+          <CreateProjectDialog open={createProjectOpen} onOpenChange={setCreateProjectOpen} />
           <ShortcutsHelp open={helpOpen} onOpenChange={setHelpOpen} />
           <TaskDetailSheet />
         </SidebarProvider>

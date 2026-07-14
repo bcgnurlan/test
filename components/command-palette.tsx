@@ -29,9 +29,15 @@ interface CommandPaletteProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onCreateTask: () => void
+  onCreateProject: () => void
 }
 
-export function CommandPalette({ open, onOpenChange, onCreateTask }: CommandPaletteProps) {
+export function CommandPalette({
+  open,
+  onOpenChange,
+  onCreateTask,
+  onCreateProject,
+}: CommandPaletteProps) {
   const router = useRouter()
 
   const go = React.useCallback(
@@ -52,6 +58,10 @@ export function CommandPalette({ open, onOpenChange, onCreateTask }: CommandPale
             <Plus />
             Yeni tapşırıq yarat
             <CommandShortcut>C</CommandShortcut>
+          </CommandItem>
+          <CommandItem onSelect={onCreateProject}>
+            <FolderKanban />
+            Yeni layihə yarat
           </CommandItem>
         </CommandGroup>
         <CommandGroup heading="Naviqasiya">
