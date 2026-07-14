@@ -12,6 +12,9 @@ import { useShell } from '@/components/app-shell'
 const pageTitles: Record<string, string> = {
   '/': 'İdarə paneli',
   '/tasks': 'Tapşırıqlar',
+  '/projects': 'Layihələr',
+  '/fields': 'Xüsusi sahələr',
+  '/members': 'Komanda və rollar',
   '/inbox': 'Gələnlər',
   '/calendar': 'Təqvim',
   '/reports': 'Hesabatlar',

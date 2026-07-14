@@ -2,17 +2,21 @@
 
 import * as React from 'react'
 import {
+  ArrowRight,
   CalendarDays,
   FileText,
   Flag,
   FolderKanban,
+  GitBranch,
   History,
   ListChecks,
+  ListTree,
   MessageSquare,
   Paperclip,
   Plus,
   Trash2,
   UserRound,
+  X,
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -58,11 +62,17 @@ export function TaskDetailSheet() {
   const updateDescription = useTaskStore((s) => s.updateDescription)
   const toggleChecklistItem = useTaskStore((s) => s.toggleChecklistItem)
   const addChecklistItem = useTaskStore((s) => s.addChecklistItem)
+  const addSubtask = useTaskStore((s) => s.addSubtask)
+  const toggleSubtask = useTaskStore((s) => s.toggleSubtask)
+  const deleteSubtask = useTaskStore((s) => s.deleteSubtask)
+  const openTask = useTaskStore((s) => s.openTask)
+  const allTasks = useTaskStore((s) => s.tasks)
   const addComment = useTaskStore((s) => s.addComment)
   const addAttachment = useTaskStore((s) => s.addAttachment)
   const details = useTaskDetails(selectedTaskId)
 
   const [newItem, setNewItem] = React.useState('')
+  const [newSubtask, setNewSubtask] = React.useState('')
   const [newComment, setNewComment] = React.useState('')
 
   if (!task) return <Sheet open={false} onOpenChange={() => closeTask()} />
@@ -74,6 +84,14 @@ export function TaskDetailSheet() {
     addChecklistItem(task.id, newItem.trim())
     setNewItem('')
   }
+
+  function submitSubtask() {
+    if (!task || !newSubtask.trim()) return
+    addSubtask(task.id, newSubtask.trim(), task.assigneeId)
+    setNewSubtask('')
+  }
+
+  const subtaskDone = details.subtasks.filter((s) => s.done).length
 
   function submitComment() {
     if (!task || !newComment.trim()) return
@@ -212,6 +230,127 @@ export function TaskDetailSheet() {
                 onChange={(e) => updateDescription(task.id, e.target.value)}
               />
             </section>
+
+            {/* Subtasks */}
+            <section aria-label="Alt tapşırıqlar" className="flex flex-col gap-2">
+              <h3 className="flex items-center gap-1.5 text-sm font-medium">
+                <ListTree className="size-4 text-muted-foreground" aria-hidden="true" />
+                Alt tapşırıqlar
+                {details.subtasks.length > 0 && (
+                  <span className="text-xs font-normal tabular-nums text-muted-foreground">
+                    {subtaskDone}/{details.subtasks.length}
+                  </span>
+                )}
+              </h3>
+              {details.subtasks.length > 0 && (
+                <Progress
+                  value={
+                    details.subtasks.length
+                      ? (subtaskDone / details.subtasks.length) * 100
+                      : 0
+                  }
+                  className="h-1.5"
+                />
+              )}
+              <ul className="flex flex-col gap-1">
+                {details.subtasks.map((sub) => {
+                  const assignee = getUser(sub.assigneeId)
+                  return (
+                    <li
+                      key={sub.id}
+                      className="group flex items-center gap-2 rounded-md px-1 py-1 hover:bg-accent/50"
+                    >
+                      <Checkbox
+                        id={`sub-${sub.id}`}
+                        checked={sub.done}
+                        onCheckedChange={() => toggleSubtask(task.id, sub.id)}
+                      />
+                      <label
+                        htmlFor={`sub-${sub.id}`}
+                        className={
+                          sub.done
+                            ? 'flex-1 text-sm text-muted-foreground line-through'
+                            : 'flex-1 text-sm'
+                        }
+                      >
+                        {sub.title}
+                      </label>
+                      <Avatar className="size-5 shrink-0">
+                        <AvatarFallback className="text-[9px]">{assignee.initials}</AvatarFallback>
+                      </Avatar>
+                      <button
+                        type="button"
+                        onClick={() => deleteSubtask(task.id, sub.id)}
+                        className="text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+                        aria-label="Alt tapşırığı sil"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Yeni alt tapşırıq..."
+                  className="h-8"
+                  value={newSubtask}
+                  onChange={(e) => setNewSubtask(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+                      e.preventDefault()
+                      submitSubtask()
+                    }
+                  }}
+                />
+                <Button variant="outline" size="icon" onClick={submitSubtask} aria-label="Alt tapşırıq əlavə et">
+                  <Plus />
+                </Button>
+              </div>
+            </section>
+
+            {/* Dependencies */}
+            {details.dependencies.length > 0 && (
+              <section aria-label="Asılılıqlar" className="flex flex-col gap-2">
+                <h3 className="flex items-center gap-1.5 text-sm font-medium">
+                  <GitBranch className="size-4 text-muted-foreground" aria-hidden="true" />
+                  Asılılıqlar
+                </h3>
+                <ul className="flex flex-col gap-1">
+                  {details.dependencies.map((dep) => {
+                    const depTask = allTasks.find((t) => t.id === dep.id)
+                    if (!depTask) return null
+                    return (
+                      <li key={dep.id}>
+                        <button
+                          type="button"
+                          onClick={() => openTask(depTask.id)}
+                          className="flex w-full items-center gap-2 rounded-md border px-2.5 py-1.5 text-left hover:bg-accent/50"
+                        >
+                          <Badge
+                            variant="outline"
+                            className="shrink-0 gap-1 font-normal text-muted-foreground"
+                          >
+                            {dep.type === 'blocks' ? (
+                              <>
+                                <ArrowRight className="size-3" aria-hidden="true" />
+                                Bloklayır
+                              </>
+                            ) : (
+                              'Bloklanıb'
+                            )}
+                          </Badge>
+                          <span className="font-mono text-[10px] text-muted-foreground">
+                            {depTask.key}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate text-sm">{depTask.title}</span>
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </section>
+            )}
 
             {/* Checklist */}
             <section aria-label="Yoxlama siyahısı" className="flex flex-col gap-2">

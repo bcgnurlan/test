@@ -16,6 +16,18 @@ export interface ChecklistItem {
   done: boolean
 }
 
+export interface SubTask {
+  id: string
+  title: string
+  done: boolean
+  assigneeId: string
+}
+
+export interface TaskDependency {
+  id: string
+  type: 'blocks' | 'blocked-by'
+}
+
 export interface TaskComment {
   id: string
   userId: string
@@ -40,6 +52,8 @@ export interface TaskActivity {
 
 export interface TaskDetails {
   description: string
+  subtasks: SubTask[]
+  dependencies: TaskDependency[]
   checklist: ChecklistItem[]
   comments: TaskComment[]
   attachments: TaskAttachment[]
@@ -57,13 +71,32 @@ export interface CreateTaskInput {
 }
 
 function emptyDetails(): TaskDetails {
-  return { description: '', checklist: [], comments: [], attachments: [], activity: [] }
+  return {
+    description: '',
+    subtasks: [],
+    dependencies: [],
+    checklist: [],
+    comments: [],
+    attachments: [],
+    activity: [],
+  }
 }
 
 const seededDetails: Record<string, TaskDetails> = {
   t1: {
     description:
       'Qeydiyyat axını çoxaddımlı formaya keçirilməlidir. Email təsdiqi və şifrə gücü göstəricisi əlavə olunacaq.',
+    subtasks: [
+      { id: 's1', title: 'Email təsdiqi ekranı', done: true, assigneeId: 'u3' },
+      { id: 's2', title: 'Şifrə gücü göstəricisi', done: true, assigneeId: 'u2' },
+      { id: 's3', title: 'Çoxaddımlı forma naviqasiyası', done: true, assigneeId: 'u2' },
+      { id: 's4', title: 'Sosial giriş düymələri', done: false, assigneeId: 'u3' },
+      { id: 's5', title: 'Yekun QA testi', done: false, assigneeId: 'u5' },
+    ],
+    dependencies: [
+      { id: 't5', type: 'blocked-by' },
+      { id: 't10', type: 'blocks' },
+    ],
     checklist: [
       { id: 'c1', text: 'Wireframe hazırla', done: true },
       { id: 'c2', text: 'Yüksək dəqiqlikli dizayn', done: true },
@@ -87,6 +120,12 @@ const seededDetails: Record<string, TaskDetails> = {
   },
   t5: {
     description: 'MongoDB Atlas Search üçün indeksləmə xidmətinin arxitekturası və API inteqrasiyası.',
+    subtasks: [
+      { id: 's1', title: 'İndeks sxemi dizaynı', done: true, assigneeId: 'u4' },
+      { id: 's2', title: 'Sinxronizasiya servisi', done: true, assigneeId: 'u4' },
+      { id: 's3', title: 'Yük testləri', done: false, assigneeId: 'u5' },
+    ],
+    dependencies: [],
     checklist: [
       { id: 'c1', text: 'İndeks sxemi', done: true },
       { id: 'c2', text: 'Sinxronizasiya servisi', done: true },
@@ -119,6 +158,9 @@ interface TaskStore {
   bulkUpdate: (ids: string[], patch: Partial<Pick<Task, 'status' | 'priority' | 'assigneeId'>>) => void
 
   updateDescription: (id: string, description: string) => void
+  addSubtask: (taskId: string, title: string, assigneeId: string) => void
+  toggleSubtask: (taskId: string, subtaskId: string) => void
+  deleteSubtask: (taskId: string, subtaskId: string) => void
   toggleChecklistItem: (taskId: string, itemId: string) => void
   addChecklistItem: (taskId: string, text: string) => void
   addComment: (taskId: string, userId: string, text: string) => void
@@ -207,16 +249,51 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       details: { ...s.details, [id]: { ...getDetails(s.details, id), description } },
     })),
 
+  addSubtask: (taskId, title, assigneeId) =>
+    set((s) => {
+      const d = getDetails(s.details, taskId)
+      const subtasks = [...d.subtasks, { id: `s-${Date.now()}`, title, done: false, assigneeId }]
+      const done = subtasks.filter((x) => x.done).length
+      return {
+        details: { ...s.details, [taskId]: { ...d, subtasks } },
+        tasks: s.tasks.map((t) =>
+          t.id === taskId ? { ...t, subtasks: { done, total: subtasks.length } } : t
+        ),
+      }
+    }),
+
+  toggleSubtask: (taskId, subtaskId) =>
+    set((s) => {
+      const d = getDetails(s.details, taskId)
+      const subtasks = d.subtasks.map((x) => (x.id === subtaskId ? { ...x, done: !x.done } : x))
+      const done = subtasks.filter((x) => x.done).length
+      return {
+        details: { ...s.details, [taskId]: { ...d, subtasks } },
+        tasks: s.tasks.map((t) =>
+          t.id === taskId ? { ...t, subtasks: { done, total: subtasks.length } } : t
+        ),
+      }
+    }),
+
+  deleteSubtask: (taskId, subtaskId) =>
+    set((s) => {
+      const d = getDetails(s.details, taskId)
+      const subtasks = d.subtasks.filter((x) => x.id !== subtaskId)
+      const done = subtasks.filter((x) => x.done).length
+      return {
+        details: { ...s.details, [taskId]: { ...d, subtasks } },
+        tasks: s.tasks.map((t) =>
+          t.id === taskId ? { ...t, subtasks: { done, total: subtasks.length } } : t
+        ),
+      }
+    }),
+
   toggleChecklistItem: (taskId, itemId) =>
     set((s) => {
       const d = getDetails(s.details, taskId)
       const checklist = d.checklist.map((c) => (c.id === itemId ? { ...c, done: !c.done } : c))
-      const done = checklist.filter((c) => c.done).length
       return {
         details: { ...s.details, [taskId]: { ...d, checklist } },
-        tasks: s.tasks.map((t) =>
-          t.id === taskId ? { ...t, subtasks: { done, total: checklist.length } } : t
-        ),
       }
     }),
 
@@ -224,12 +301,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     set((s) => {
       const d = getDetails(s.details, taskId)
       const checklist = [...d.checklist, { id: `c-${Date.now()}`, text, done: false }]
-      const done = checklist.filter((c) => c.done).length
       return {
         details: { ...s.details, [taskId]: { ...d, checklist } },
-        tasks: s.tasks.map((t) =>
-          t.id === taskId ? { ...t, subtasks: { done, total: checklist.length } } : t
-        ),
       }
     }),
 

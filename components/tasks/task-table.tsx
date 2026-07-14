@@ -13,6 +13,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import {
@@ -84,6 +85,21 @@ export function TaskTable({ tasks }: { tasks: Task[] }) {
   const [visible, setVisible] = React.useState<Set<ColumnId>>(
     new Set(columnDefs.map((c) => c.id))
   )
+  const [editingId, setEditingId] = React.useState<string | null>(null)
+  const [draftTitle, setDraftTitle] = React.useState('')
+
+  function startEdit(id: string, title: string) {
+    setEditingId(id)
+    setDraftTitle(title)
+  }
+
+  function commitEdit() {
+    if (editingId && draftTitle.trim()) {
+      updateTask(editingId, { title: draftTitle.trim() })
+    }
+    setEditingId(null)
+    setDraftTitle('')
+  }
 
   const sorted = React.useMemo(() => {
     const copy = [...tasks]
@@ -199,6 +215,30 @@ export function TaskTable({ tasks }: { tasks: Task[] }) {
                       }}
                     >
                       {statusConfig[s].label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="outline" size="sm">
+                    Prioritet
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="start">
+                <DropdownMenuGroup>
+                  {(Object.keys(priorityConfig) as TaskPriority[]).map((p) => (
+                    <DropdownMenuItem
+                      key={p}
+                      onClick={() => {
+                        bulkUpdate(selectedIds, { priority: p })
+                        setSelected(new Set())
+                      }}
+                    >
+                      {priorityConfig[p].label}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuGroup>
@@ -379,18 +419,44 @@ export function TaskTable({ tasks }: { tasks: Task[] }) {
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {task.key}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="max-w-64 truncate font-medium lg:max-w-96">
-                          {task.title}
-                        </span>
-                        {task.comments > 0 && (
-                          <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                            <MessageSquare className="size-3" aria-hidden="true" />
-                            {task.comments}
+                    <TableCell onClick={(e) => editingId === task.id && e.stopPropagation()}>
+                      {editingId === task.id ? (
+                        <Input
+                          autoFocus
+                          value={draftTitle}
+                          onChange={(e) => setDraftTitle(e.target.value)}
+                          onBlur={commitEdit}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+                              e.preventDefault()
+                              commitEdit()
+                            } else if (e.key === 'Escape') {
+                              setEditingId(null)
+                            }
+                          }}
+                          className="h-7"
+                          aria-label="Başlığı redaktə et"
+                        />
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="max-w-64 truncate font-medium lg:max-w-96"
+                            onDoubleClick={(e) => {
+                              e.stopPropagation()
+                              startEdit(task.id, task.title)
+                            }}
+                            title="Redaktə etmək üçün iki dəfə klikləyin"
+                          >
+                            {task.title}
                           </span>
-                        )}
-                      </div>
+                          {task.comments > 0 && (
+                            <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                              <MessageSquare className="size-3" aria-hidden="true" />
+                              {task.comments}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </TableCell>
                     {visible.has('status') && (
                       <TableCell onClick={(e) => e.stopPropagation()}>
