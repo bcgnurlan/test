@@ -8,6 +8,7 @@ import { TopBar } from '@/components/top-bar'
 import { CommandPalette } from '@/components/command-palette'
 import { CreateTaskDialog } from '@/components/create-task-dialog'
 import { ShortcutsHelp } from '@/components/shortcuts-help'
+import { TaskDetailSheet } from '@/components/task-detail-sheet'
 
 interface ShellContextValue {
   openCommand: () => void
@@ -88,6 +89,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           />
           <CreateTaskDialog open={createOpen} onOpenChange={setCreateOpen} />
           <ShortcutsHelp open={helpOpen} onOpenChange={setHelpOpen} />
+          <TaskDetailSheet />
         </SidebarProvider>
       </TooltipProvider>
     </ShellContext.Provider>
